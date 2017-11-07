@@ -1,9 +1,255 @@
-<!DOCTYPE html>
-<head> 
-<title> he </title>
-</head>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript">
+
+        var direction = 'right', speed = 100, ticker = null, fruitCell = [], score = 0, size = 50;
+        var snakeCells = [
+			[10, 14],
+			[10, 13],
+			[10, 12],
+			[10, 11],
+			[10, 10],
+			[10, 9],
+			[10, 8],
+			[10, 7]
+        ];
+        var snakeHead = [10, 14];
+
+        function makingSnake() {
+            $('td').removeClass('snakeCell snakeHead');
+            for (var cell in snakeCells) {
+                $('tr').eq(snakeCells[cell][0]).find('td').eq(snakeCells[cell][1]).addClass('snakeCell');
+            }
+            $('tr').eq(snakeHead[0]).find('td').eq(snakeHead[1]).addClass('snakeHead');
+        }
+
+        function getFruitCell() {
+            fruitCell = [getRandomNumber($('tr').length), getRandomNumber($('tr:eq(0)>td').length)];
+        }
+
+        function gameOver() {
+            $('div.gameOver').show('fast', function () {
+                $(this).animate({ top: 250 }, 'slow');
+            });
+            clearInterval(ticker);
+            $('#gameover').html('Game Over! Your Score: ' + score);
+            $(document).ready(function () {
+                $('#btnRestart').click(function () {
+                    location.reload();
+                });
+            });
+        }
+
+        function updateSnakeCell() {
+            var snakeNewHead = [];
+            switch (direction) {
+                case 'right':
+                    snakeNewHead = [snakeHead[0], snakeHead[1] + 1];
+                    break;
+                case 'left':
+                    snakeNewHead = [snakeHead[0], snakeHead[1] - 1];
+                    break;
+                case 'up':
+                    snakeNewHead = [snakeHead[0] - 1, snakeHead[1]];
+                    break;
+                case 'down':
+                    snakeNewHead = [snakeHead[0] + 1, snakeHead[1]];
+                    break;
+            }
+            var newCell = { length: 0 }
+            if (snakeNewHead[0] < 0 || snakeNewHead[1] < 0) {
+                gameOver();
+                return;
+            } else if (snakeNewHead[0] >= size || snakeNewHead[1] >= size) {
+                gameOver();
+                return;
+            }
+            var newCell = $('tr').eq(snakeNewHead[0]).find('td').eq(snakeNewHead[1]);
+            if (newCell.length == 0) {
+                gameOver();
+            } else {
+                if (newCell.hasClass('snakeCell')) {
+                    gameOver();
+                } else {
+                    if (newCell.hasClass('fruitCell')) {
+                        snakeCells.push([]);
+                        getFruitCell();
+                        renderFruitCell();
+                        score += 1;
+                        $('#scoreBoard').html('Your Score : ' + score);
+                        speed = speed - 10 > 5 ? speed - 3 : speed;
+                        clearInterval(ticker);
+                        startGame();
+                    }
+                    for (var i = (snakeCells.length - 1) ; i > 0 ; i--) {
+                        snakeCells[i] = snakeCells[i - 1];
+                    }
+                    snakeCells[0] = snakeHead = snakeNewHead;
+                    makingSnake();
+
+                }
+            }
+        }
+
+        function getRandomNumber(limit) {
+            return parseInt(Math.random() * limit % limit);
+        }
+
+        function getNewDirection(keyCode) {
+            var codes = {
+                37: 'left',
+                38: 'up',
+                39: 'right',
+                40: 'down'
+            };
+
+            if (typeof codes[keyCode] != 'undefined') {
+                var newDirection = codes[keyCode], changeDirection = true;
+                switch (direction) {
+                    case 'up':
+                        changeDirection = newDirection != 'down';
+                        break;
+                    case 'down':
+                        changeDirection = newDirection != 'up';
+                        break;
+                    case 'right':
+                        changeDirection = newDirection != 'left';
+                        break;
+                    case 'left':
+                        changeDirection = newDirection != 'right';
+                        break;
+                }
+                direction = changeDirection ? newDirection : direction;
+            }
+        }
+
+        function createtablecells() {
+            var rowhtml = '';
+            for (var i = 0; i < size; i++) {
+                rowhtml += '<td cellpadding="0" cellspacing="0"></td>'
+            }
+            html = [];
+            for (var i = 0; i < size; i++) {
+                html.push('<tr cellpadding="0" cellspacing="0">' + rowhtml + '</tr>');
+            }
+            $(document.body).append('<table>' + html.join('\n') + '</table>');
+            getFruitCell();
+        }
+
+        function renderFruitCell() {
+            $('td').removeClass('fruitCell');
+            $('tr').eq(fruitCell[0]).find('td').eq(fruitCell[1]).addClass('fruitCell');
+        }
+
+        function startGame() {
+            ticker = setInterval(updateSnakeCell, speed);
+        }
+
+        $(document).ready(function () {
+            createtablecells();
+            renderFruitCell();
+            $(document).bind('keydown', function (e) {
+                getNewDirection(e.keyCode);
+            });
+            startGame();
+        });
+
+    </script>
+
+    <style type="text/css">
+        table {
+            margin: 0 auto 10px auto;
+            border: 1px solid #ccc;
+            box-shadow: 3px 3px 10px #999;
+        }
+
+        td {
+            width: 6px;
+            height: 6px;
+            border: 1px solid white;
+        }
+
+            td.snakeCell {
+                background: black;
+                border: 1px solid #000;
+                box-shadow: 1px 1px 1px #aaa;
+            }
+
+            td.snakeHead {
+                background: red;
+                border: 1px solid red;
+            }
+
+            td.fruitCell {
+                background: red;
+                border: 1px solid black;
+            }
+
+        #scoreBoard {
+            
+            position:absolute;
+            top:0;
+            right:150px;
+            box-shadow: 0 -3px 5px #aaa;
+            width: 130px;
+            margin: 50px auto 0 auto;
+            border: 1px solid white;
+            background: black;
+            font-weight: bold;
+            color: white;
+            padding: 10px;
+        }
+
+        #popup {
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 2px 2px 1px #fff;
+            position: absolute;
+            top: 0;
+            left: 540px;
+            background: #eee;
+            color: red;
+            width: 240px;
+            border: 30px solid #eee;
+            text-align: center;
+            -moz-border-radius: 90px;
+            -webkit-border-radius: 90px;
+            border-radius: 90px;
+            box-shadow: 0 -3px 5px #aaa;
+        }
+
+        #btnRestart {
+            font-weight: bold;
+            font-size: 20px;
+            background: black;
+            color: white;
+            width: 90px;
+            border: 1px solid #eee;
+            text-align: center;
+            -moz-border-radius: 90px;
+            -webkit-border-radius: 90px;
+            border-radius: 90px;
+            box-shadow: 0 -3px 5px #aaa;
+        }
+       
+    </style>
+
+    <title>Snake Game</title>
+
+</head>
 <body>
-<h1>heeloooooo<h1>
+
+     <div id="scoreBoard">Your Score : 0</div>
+
+    <div id="popup" class="gameOver" style="display:none">
+       <p id="gameover"></p>
+        <br />
+        <button id="btnRestart">Restart</button>
+    </div>
+
 </body>
+
 </html>
