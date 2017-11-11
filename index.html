@@ -7,16 +7,16 @@
 
         var direction = 'right', speed = 100, ticker = null, fruitCell = [], score = 0, size = 50;
         var snakeCells = [
-			[10, 14],
-			[10, 13],
-			[10, 12],
-			[10, 11],
-			[10, 10],
-			[10, 9],
-			[10, 8],
-			[10, 7]
+			[15, 14],
+			[15, 13],
+			[15, 12],
+			[15, 11],
+			[15, 10],
+			[15, 9],
+			[15, 8],
+			[15, 7]
         ];
-        var snakeHead = [10, 14];
+        var snakeHead = [15, 14];
 
         function makingSnake() {
             $('td').removeClass('snakeCell snakeHead');
@@ -45,35 +45,55 @@
 
         function updateSnakeCell() {
             var snakeNewHead = [];
-            switch (direction) {
-                case 'right':
+
+            //moving head through borders
+            if (snakeHead[0] == 49 && direction == 'down' || snakeHead[0] == 0 && direction == 'up' ||
+                snakeHead[1] == 49 && direction == 'right' || snakeHead[1] == 0 && direction == 'left') {
+                
+                if (direction == 'down' && snakeHead[0] == 49) {
+                    snakeNewHead = [0, snakeHead[1]];
+                }
+
+                else if (direction == 'up' && snakeHead[0] == 0) {
+                    snakeNewHead = [49, snakeHead[1]];
+                }
+
+                else if (direction == 'right' && snakeHead[1] == 49) {
+                    snakeNewHead = [snakeHead[0], 0];
+                }
+                    
+                else if (direction == 'left' && snakeHead[1] == 0) {
+                    snakeNewHead = [snakeHead[0], 49];
+                }
+
+            }
+            else {
+                
+                if (direction == 'right') {
                     snakeNewHead = [snakeHead[0], snakeHead[1] + 1];
-                    break;
-                case 'left':
+                }
+                else if (direction == 'left') {
                     snakeNewHead = [snakeHead[0], snakeHead[1] - 1];
-                    break;
-                case 'up':
+                }
+                else if (direction == 'up') {
                     snakeNewHead = [snakeHead[0] - 1, snakeHead[1]];
-                    break;
-                case 'down':
+                }
+                else if (direction == 'down') {
                     snakeNewHead = [snakeHead[0] + 1, snakeHead[1]];
-                    break;
+                }
             }
+            //end
+
             var newCell = { length: 0 }
-            if (snakeNewHead[0] < 0 || snakeNewHead[1] < 0) {
-                gameOver();
-                return;
-            } else if (snakeNewHead[0] >= size || snakeNewHead[1] >= size) {
-                gameOver();
-                return;
-            }
             var newCell = $('tr').eq(snakeNewHead[0]).find('td').eq(snakeNewHead[1]);
             if (newCell.length == 0) {
-                gameOver();
-            } else {
+            }
+            else {
                 if (newCell.hasClass('snakeCell')) {
                     gameOver();
-                } else {
+                }
+                    
+                else {
                     if (newCell.hasClass('fruitCell')) {
                         snakeCells.push([]);
                         getFruitCell();
@@ -84,9 +104,12 @@
                         clearInterval(ticker);
                         startGame();
                     }
+
                     for (var i = (snakeCells.length - 1) ; i > 0 ; i--) {
+
                         snakeCells[i] = snakeCells[i - 1];
                     }
+
                     snakeCells[0] = snakeHead = snakeNewHead;
                     makingSnake();
 
@@ -189,10 +212,9 @@
             }
 
         #scoreBoard {
-            
-            position:absolute;
-            top:0;
-            right:150px;
+            position: absolute;
+            top: 0;
+            right: 150px;
             box-shadow: 0 -3px 5px #aaa;
             width: 130px;
             margin: 50px auto 0 auto;
@@ -234,7 +256,6 @@
             border-radius: 90px;
             box-shadow: 0 -3px 5px #aaa;
         }
-       
     </style>
 
     <title>Snake Game</title>
@@ -242,10 +263,10 @@
 </head>
 <body>
 
-     <div id="scoreBoard">Your Score : 0</div>
+    <div id="scoreBoard">Your Score : 0</div>
 
     <div id="popup" class="gameOver" style="display:none">
-       <p id="gameover"></p>
+        <p id="gameover"></p>
         <br />
         <button id="btnRestart">Restart</button>
     </div>
